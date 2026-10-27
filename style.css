@@ -4,11 +4,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  /* Paleta Oscura (Deep Space) */
   --bg-base: #09090B;
-  /* Negro puro con un toque muy sutil de gris */
   --bg-gradient: radial-gradient(circle at 50% -20%, #2D1B4E 0%, #09090B 70%);
-  /* Resplandor púrpura arriba */
 
   --glass-bg: rgba(25, 25, 30, 0.65);
   --glass-bg-2: rgba(35, 35, 40, 0.85);
@@ -17,14 +14,12 @@
 
   --text-main: #FAFAFA;
   --text-muted: #A1A1AA;
+  --text-dim: #71717A;
   --text-dark: #52525B;
 
-  /* Acentos (Neón) */
   --accent: #D946EF;
-  /* Fucsia brillante */
   --accent-glow: rgba(217, 70, 239, 0.3);
   --secondary: #A3E635;
-  /* Lima eléctrico */
   --success: #10B981;
   --danger: #F43F5E;
 
@@ -33,7 +28,6 @@
 }
 
 [data-theme="light"] {
-  /* Paleta Clara (Soft Pastel) */
   --bg-base: #FAFAFA;
   --bg-gradient: radial-gradient(circle at 50% -20%, #F3E8FF 0%, #FAFAFA 70%);
 
@@ -44,13 +38,12 @@
 
   --text-main: #18181B;
   --text-muted: #71717A;
-  --text-dark: #A1A1AA;
+  --text-dim: #A1A1AA;
+  --text-dark: #D4D4D8;
 
   --accent: #C026D3;
-  /* Fucsia más oscuro para contraste */
   --accent-glow: rgba(192, 38, 211, 0.2);
   --secondary: #65A30D;
-  /* Lima oscuro */
   --success: #059669;
   --danger: #E11D48;
 
@@ -132,7 +125,7 @@ svg {
   vertical-align: middle;
 }
 
-/* HEADER (Glass) */
+/* HEADER */
 .app-header {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -237,6 +230,11 @@ svg {
   background: var(--glass-bg-2);
 }
 
+select.field option {
+  background: var(--bg-base);
+  color: var(--text-main);
+}
+
 .search-wrapper {
   position: relative;
   flex: 1;
@@ -279,7 +277,6 @@ svg {
 }
 
 .btn-lime {
-  /* Botón principal (Fucsia) */
   background: linear-gradient(135deg, #D946EF, #8B5CF6);
   color: #FFF;
   box-shadow: 0 4px 15px var(--accent-glow);
@@ -325,7 +322,7 @@ svg {
   color: var(--secondary);
 }
 
-/* TARJETAS DE RADIO (Glass) */
+/* TARJETAS DE RADIO */
 .radio-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -347,7 +344,6 @@ svg {
   box-shadow: var(--shadow-lg);
 }
 
-/* Indicador superior sutil */
 .radio-card::before {
   content: '';
   position: absolute;
@@ -503,7 +499,7 @@ svg {
   word-break: break-all;
 }
 
-/* LIST ITEMS (Dentro del panel) */
+/* LIST ITEMS */
 #listItems {
   list-style: none;
   padding: 0;
@@ -579,7 +575,7 @@ svg {
   margin-top: 4px;
 }
 
-/* FOOTER */
+/* FOOTER & PLAYER */
 .app-footer {
   background: var(--glass-bg);
   border-top: 1px solid var(--glass-border);
@@ -588,7 +584,6 @@ svg {
   backdrop-filter: blur(8px);
 }
 
-/* PLAYER BAR */
 .player-bar {
   position: sticky;
   bottom: 0;

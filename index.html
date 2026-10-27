@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:wght@400;700&family=Barlow:wght@400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
     rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +28,7 @@
         </span>
         <hgroup>
           <h1 class="brand-title">EURO<span>TRACK</span></h1>
-          <p class="brand-sub">NAVIGATION SYSTEM · V 1.0</p>
+          <p class="brand-sub">NAVIGATION SYSTEM · V 1.2</p>
         </hgroup>
       </section>
 
@@ -59,6 +59,7 @@
       <!-- CONTENIDO PRINCIPAL -->
       <section class="lg:col-span-8">
         <form class="mb-6 flex flex-col sm:flex-row gap-4" onsubmit="return false;">
+
           <label class="search-wrapper">
             <svg class="search-icon" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"></circle>
@@ -67,6 +68,14 @@
             <input id="radioSearch" type="text" data-i18n-placeholder="search_placeholder" placeholder="Buscar radio..."
               autocomplete="off" class="field search-input font-mono text-sm">
           </label>
+
+          <!-- NUEVO FILTRO DE COMPATIBILIDAD -->
+          <select id="compatFilter" class="field font-mono text-sm sm:w-48 cursor-pointer"
+            style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23A1A1AA%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem top 50%; background-size: 0.65rem auto;">
+            <option value="all" data-i18n="filter_all">TODAS LAS RADIOS</option>
+            <option value="ok" data-i18n="filter_ok">SOLO COMPATIBLES</option>
+            <option value="err" data-i18n="filter_err">SOLO NO COMPATIBLES</option>
+          </select>
 
           <section class="relative sm:w-64" id="countryWrap">
             <button id="countryBtn" class="field flex items-center justify-between cursor-pointer font-mono text-sm"
@@ -143,8 +152,8 @@ live_stream_def : .live_streams {
     <nav class="max-w-7xl mx-auto px-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono">
       <section class="flex items-center gap-3">
         <span
-          class="w-6 h-6 flex items-center justify-center border border-[var(--border)] text-[var(--accent)] font-bold text-sm"
-          style="font-family: 'Barlow Condensed'; background: var(--surface-2);">E</span>
+          class="w-6 h-6 flex items-center justify-center border border-[var(--glass-border)] text-[var(--accent)] font-bold text-sm"
+          style="background: var(--glass-bg-2); border-radius: 4px;">E</span>
         <span class="text-[var(--text-dim)]" data-i18n="footer_text">EUROTRACK SIMULATOR</span>
       </section>
       <section class="flex items-center gap-4 text-[var(--text-dim)]">
@@ -177,7 +186,7 @@ live_stream_def : .live_streams {
 
       <button id="btnStop" class="icon-btn" title="Detener">
         <svg viewBox="0 0 24 24">
-          <rect x="5" y="5" width="14" height="14"></rect>
+          <rect x="5" y="5" width="14" height="14" rx="2"></rect>
         </svg>
       </button>
     </section>
@@ -188,4 +197,4 @@ live_stream_def : .live_streams {
   <script src="script.js"></script>
 </body>
 
-</html>w
+</html>

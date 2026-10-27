@@ -8,6 +8,9 @@ const i18n = {
     header_radio: "SISTEMA DE RADIO",
     search_placeholder: "Buscar radio...",
     all_countries: "Todos",
+    filter_all: "TODAS LAS RADIOS",
+    filter_ok: "SOLO COMPATIBLES",
+    filter_err: "SOLO NO COMPATIBLES",
     connecting: "> Iniciando conexión...",
     searching: "> Buscando señal...",
     error_conn: "> ERROR DE CONEXIÓN:",
@@ -35,6 +38,9 @@ const i18n = {
     header_radio: "RADIO SYSTEM",
     search_placeholder: "Search radio...",
     all_countries: "All",
+    filter_all: "ALL RADIOS",
+    filter_ok: "COMPATIBLE ONLY",
+    filter_err: "INCOMPATIBLE ONLY",
     connecting: "> Connecting...",
     searching: "> Searching signal...",
     error_conn: "> CONNECTION ERROR:",
@@ -365,6 +371,7 @@ const state = {
   limit: 24,
   lang: "es",
   theme: "dark",
+  compatFilter: "all",
 };
 
 let currentRadioId = null;
@@ -631,7 +638,20 @@ function renderRadios() {
     host.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">${i18n[state.lang].results_0}</p>`;
     return;
   }
-  host.innerHTML = state.radios.map(renderRadioCard).join("");
+
+  let filteredRadios = state.radios;
+  if (state.compatFilter === "ok") {
+    filteredRadios = filteredRadios.filter((r) => r._compatible);
+  } else if (state.compatFilter === "err") {
+    filteredRadios = filteredRadios.filter((r) => !r._compatible);
+  }
+
+  if (filteredRadios.length === 0) {
+    host.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">> NO HAY RADIOS CON ESTE FILTRO</p>`;
+    return;
+  }
+
+  host.innerHTML = filteredRadios.map(renderRadioCard).join("");
   updatePlayButtons();
 }
 
@@ -648,19 +668,19 @@ function renderPagination(hasMore) {
 
   html +=
     state.page > 1
-      ? `<button data-page="${state.page - 1}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]"><</button>`
-      : `<span class="w-8 h-8 flex items-center justify-center border-2 border-transparent text-[var(--text-dim)]"><</span>`;
+      ? `<button data-page="${state.page - 1}" class="w-8 h-8 flex items-center justify-center border border-[var(--glass-border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--glass-bg)] rounded-lg"><</button>`
+      : `<span class="w-8 h-8 flex items-center justify-center border border-transparent text-[var(--text-dim)]"><</span>`;
 
   for (let i = startPage; i <= endPage; i++) {
     if (i === state.page)
-      html += `<span class="w-8 h-8 flex items-center justify-center border-2 border-[var(--accent)] bg-[var(--accent)] text-white font-bold">${i}</span>`;
+      html += `<span class="w-8 h-8 flex items-center justify-center border border-[var(--accent)] bg-[var(--accent)] text-white font-bold rounded-lg shadow-[0_0_10px_var(--accent-glow)]">${i}</span>`;
     else
-      html += `<button data-page="${i}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]">${i}</button>`;
+      html += `<button data-page="${i}" class="w-8 h-8 flex items-center justify-center border border-[var(--glass-border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--glass-bg)] rounded-lg">${i}</button>`;
   }
 
   html += hasMore
-    ? `<button data-page="${state.page + 1}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]">></button>`
-    : `<span class="w-8 h-8 flex items-center justify-center border-2 border-transparent text-[var(--text-dim)]">></span>`;
+    ? `<button data-page="${state.page + 1}" class="w-8 h-8 flex items-center justify-center border border-[var(--glass-border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--glass-bg)] rounded-lg">></button>`
+    : `<span class="w-8 h-8 flex items-center justify-center border border-transparent text-[var(--text-dim)]">></span>`;
 
   host.innerHTML = html;
 }
@@ -682,7 +702,7 @@ function renderRadioCard(radio) {
 
   const channelsHtml =
     group.length > 1
-      ? `<section class="channels-box"><span style="color:var(--text-dim);">>> CANALES:</span>${group
+      ? `<section class="channels-box"><span style="color:var(--text-muted);">>> CANALES:</span>${group
           .map((r) => {
             const c = esCompatible(r.codec, r.url_resolved || r.url);
             return `<span style="color:var(--${c ? "success" : "danger"});margin-left:8px;">${c ? "✔" : "✘"} ${escapeHtml(r.codec || "?")} ${r.bitrate || 0}k</span>`;
@@ -713,10 +733,10 @@ function renderRadioCard(radio) {
       ${badge}
     </header>
     <p class="radio-meta flex flex-wrap gap-2 mb-2">
-      <span class="text-[var(--text)]">${escapeHtml(radio.codec || "?")}</span><span class="text-[var(--border-2)]">|</span>
-      <span>${radio.bitrate || 0} KBPS</span><span class="text-[var(--border-2)]">|</span>
+      <span class="text-[var(--text-main)]">${escapeHtml(radio.codec || "?")}</span><span class="text-[var(--glass-border-hover)]">|</span>
+      <span>${radio.bitrate || 0} KBPS</span><span class="text-[var(--glass-border-hover)]">|</span>
       <span>${escapeHtml(radio.countryName || radio.country || "?")}</span>
-      ${radio.tags ? `<span class="text-[var(--border-2)]">|</span><span class="truncate max-w-xs">${escapeHtml(radio.tags.split(",").slice(0, 3).join(", "))}</span>` : ""}
+      ${radio.tags ? `<span class="text-[var(--glass-border-hover)]">|</span><span class="truncate max-w-xs">${escapeHtml(radio.tags.split(",").slice(0, 3).join(", "))}</span>` : ""}
     </p>
     ${channelsHtml}
     <footer class="flex gap-3 mt-4">
@@ -756,8 +776,8 @@ function updatePlayButtons() {
     const on = card.dataset.radioId === currentRadioId && !audio.paused;
     if (on) {
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> ${i18n[state.lang].btn_pause}`;
-      btn.style.borderColor = "var(--accent)";
-      btn.style.color = "var(--accent)";
+      btn.style.borderColor = "var(--secondary)";
+      btn.style.color = "var(--secondary)";
     } else {
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> ${i18n[state.lang].btn_play}`;
       btn.style.borderColor = "";
@@ -802,7 +822,7 @@ function renderList() {
   $("#listCount").textContent = String(state.list.length);
   if (!state.list.length) {
     host.innerHTML =
-      '<li class="text-xs text-center py-4 font-mono text-[var(--text-dim)] border-2 border-dashed border-[var(--border)]">> VACÍO / EMPTY</li>';
+      '<li class="text-xs text-center py-4 font-mono text-[var(--text-dark)] border border-dashed border-[var(--glass-border)] rounded-xl">> VACÍO / EMPTY</li>';
   } else {
     host.innerHTML = state.list
       .map(
@@ -896,10 +916,10 @@ function renderCountryMenu() {
   menu.innerHTML = items
     .map((c) => {
       const flag = c.code
-        ? `<img src="https://flagcdn.com/w40/${c.code.toLowerCase()}.png" alt="" class="w-5 h-3 object-cover rounded-sm" loading="lazy">`
+        ? `<img src="https://flagcdn.com/w40/${c.code.toLowerCase()}.png" alt="" class="w-5 h-3 object-cover rounded-md" loading="lazy">`
         : `<svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
       const active = state.country === c.code ? "active" : "";
-      return `<li><button class="country-item ${active} flex items-center gap-3 w-full text-left font-mono text-xs" data-country-code="${c.code}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
+      return `<li><button class="country-item ${active} flex items-center gap-3 w-full text-left" data-country-code="${c.code}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
     })
     .join("");
 }
@@ -913,7 +933,7 @@ function updateCountryButton() {
     `;
   } else {
     const c = COUNTRIES.find((x) => x.code === state.country);
-    el.innerHTML = `<img src="https://flagcdn.com/w40/${state.country.toLowerCase()}.png" alt="" class="w-4 h-3 object-cover rounded-sm"><span>${escapeHtml(c ? c.name : state.country)}</span>`;
+    el.innerHTML = `<img src="https://flagcdn.com/w40/${state.country.toLowerCase()}.png" alt="" class="w-4 h-3 object-cover rounded-md"><span>${escapeHtml(c ? c.name : state.country)}</span>`;
   }
 }
 
@@ -986,6 +1006,11 @@ document.getElementById("radioSearch").addEventListener(
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#countryMenu").classList.toggle("hidden");
+});
+
+document.getElementById("compatFilter").addEventListener("change", (e) => {
+  state.compatFilter = e.target.value;
+  renderRadios();
 });
 
 document.addEventListener("keydown", (e) => {
