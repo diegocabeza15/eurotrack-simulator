@@ -28,9 +28,7 @@ const i18n = {
     footer_text: "EUROTRACK SIMULATOR",
     toast_dup: "> YA ESTÁ EN LA LISTA",
     toast_add: "> AÑADIDO AL SII",
-    toast_play_err: "> FALLO AL REPRODUCIR (CÓDEC O CONEXIÓN)",
-    toast_mixed:
-      "> ERROR: MEZCLA DE HTTP Y HTTPS. EL NAVEGADOR BLOQUEÓ EL AUDIO.",
+    toast_play_err: "> FALLO AL REPRODUCIR",
     toast_copied: "> TEXTO COPIADO",
     toast_exported: "> ARCHIVO EXPORTADO",
     toast_empty: "> LA LISTA YA ESTÁ VACÍA",
@@ -60,8 +58,7 @@ const i18n = {
     footer_text: "EUROTRACK SIMULATOR",
     toast_dup: "> ALREADY IN LIST",
     toast_add: "> ADDED TO SII",
-    toast_play_err: "> PLAYBACK FAILED (CODEC OR CONNECTION)",
-    toast_mixed: "> ERROR: MIXED HTTP AND HTTPS. BROWSER BLOCKED AUDIO.",
+    toast_play_err: "> PLAYBACK FAILED",
     toast_copied: "> TEXT COPIED",
     toast_exported: "> FILE EXPORTED",
     toast_empty: "> LIST IS ALREADY EMPTY",
@@ -426,14 +423,14 @@ function esCompatible(codec, url) {
   return false;
 }
 
-function flash(msg, color, duration = 4000) {
+function flash(msg, color) {
   const el = document.createElement("aside");
   el.className =
     "toast " +
     (color === "green" ? "green" : color === "red" ? "red" : "neutral");
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), duration);
+  setTimeout(() => el.remove(), 2500);
 }
 
 function saveList() {
@@ -459,6 +456,7 @@ function setLanguage(lang) {
     if (i18n[lang][key]) el.setAttribute("placeholder", i18n[lang][key]);
   });
 
+  // Actualizar el botón de filtro
   const compatMap = {
     all: i18n[lang].filter_all,
     ok: i18n[lang].filter_ok,
@@ -567,8 +565,8 @@ audio.addEventListener("ended", () => {
   updatePlayButtons();
 });
 audio.addEventListener("error", () => {
-  if (!audio.currentSrc || audio.currentSrc === window.location.href) return;
-  flash(i18n[state.lang].toast_play_err, "red", 6000);
+  if (!audio.currentSrc) return;
+  flash(i18n[state.lang].toast_play_err, "red");
 });
 
 /* =========================================================
@@ -761,40 +759,21 @@ function renderRadioCard(radio) {
 function playRadioById(id) {
   const radio = state.radios.find((r) => r.stationuuid === id);
   if (!radio) return;
-
-  let playUrl = radio.url_resolved || radio.url;
-  if (!radio._compatible && radio._group) {
-    const compatible = radio._group.find((r) =>
-      esCompatible(r.codec, r.url_resolved || r.url),
-    );
-    if (compatible) playUrl = compatible.url_resolved || compatible.url;
-  }
-
+  const url = radio.url_resolved || radio.url;
   if (currentRadioId === id && !audio.paused) {
     audio.pause();
     updatePlayButtons();
     return;
   }
-
-  if (window.location.protocol === "https:" && playUrl.startsWith("http:")) {
-    flash(i18n[state.lang].toast_mixed, "red", 6000);
-    return;
-  }
-
   currentRadioId = id;
-  audio.src = playUrl;
-  audio.load();
-
-  updatePlayerDisplay(radio.name || "Radio", playUrl);
-
-  audio.play().catch((err) => {
-    console.error("Error playing stream:", err);
-    flash(i18n[state.lang].toast_play_err, "red", 5000);
+  audio.src = url;
+  updatePlayerDisplay(radio.name || "Radio", url);
+  audio.play().catch(() => {
+    flash(i18n[state.lang].toast_play_err, "red");
     currentRadioId = null;
     updatePlayerDisplay(null, null);
     updatePlayButtons();
   });
-
   updatePlayButtons();
 }
 
@@ -918,13 +897,17 @@ function handleDragEnd(e) {
 }
 
 /* =========================================================
-   CONSTRUCCIÓN DEL ARCHIVO .SII (VUELTO AL ORIGINAL)
+   CONSTRUCCIÓN DEL ARCHIVO .SII (FORMATO EXACTO)
    ========================================================= */
 function buildSII() {
-  let out = "SiiNunit\n{\nlive_stream_def : .live_streams {\n";
+  let out = "SiiNunit\n{\nlive_stream_def : _nameless.234.2c04.5a20\n{\n";
+  out += `    stream_data: ${state.list.length}\n`;
+
   state.list.forEach((item, i) => {
-    out += ` stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|0|0|0|0"\n`;
+    // Formato: URL | Nombre | Género | Idioma | Bitrate | 1
+    out += `    stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|1"\n`;
   });
+
   out += "}\n}\n";
   return out;
 }
@@ -998,6 +981,7 @@ document.addEventListener("click", (ev) => {
   if (compatItem) {
     state.compatFilter = compatItem.dataset.compat;
 
+    // Actualizar botón y clases
     $("#compatBtnContent").textContent = compatItem.textContent;
     document
       .querySelectorAll("#compatMenu [data-compat]")
@@ -1056,13 +1040,13 @@ document.getElementById("radioSearch").addEventListener(
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#countryMenu").classList.toggle("hidden");
-  $("#compatMenu").classList.add("hidden");
+  $("#compatMenu").classList.add("hidden"); // Cierra el otro menú
 });
 
 document.getElementById("compatBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#compatMenu").classList.toggle("hidden");
-  $("#countryMenu").classList.add("hidden");
+  $("#countryMenu").classList.add("hidden"); // Cierra el otro menú
 });
 
 document.addEventListener("keydown", (e) => {
