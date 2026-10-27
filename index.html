@@ -58,7 +58,6 @@
 
       <!-- CONTENIDO PRINCIPAL -->
       <section class="lg:col-span-8">
-        <!-- Cambiado mb-6 a mb-12 para dar más espacio a la lista -->
         <form class="mb-12 flex flex-col sm:flex-row gap-4" onsubmit="return false;">
 
           <label class="search-wrapper">
@@ -140,11 +139,12 @@
             </section>
           </header>
 
+          <!-- VISTA PREVIA VUELTA AL FORMATO ANTERIOR -->
           <pre id="siiPreview" class="sii-preview mb-4">SiiNunit
 {
 live_stream_def : _nameless.234.2c04.5a20
 {
-    stream_data: 0
+    stream_data: 2
 }
 }</pre>
 
@@ -182,13 +182,11 @@ live_stream_def : _nameless.234.2c04.5a20
     <section class="flex items-center gap-3 w-full">
       <span id="playerDot" class="dot-player"></span>
 
-      <!-- Info compacta -->
       <section class="flex-1 min-w-0 mr-2">
         <p id="playerTitle" class="player-title-text" data-i18n="waiting">SISTEMA EN ESPERA</p>
         <code id="playerUrl" class="player-url-text hidden sm:block">—</code>
       </section>
 
-      <!-- Controles compactos -->
       <button id="btnMute" class="icon-btn" title="Mute">
         <svg id="iconVolume" viewBox="0 0 24 24">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>

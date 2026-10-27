@@ -566,8 +566,7 @@ audio.addEventListener("ended", () => {
   updatePlayerDisplay(null, null);
   updatePlayButtons();
 });
-audio.addEventListener("error", (e) => {
-  // Ignorar errores si no hay una fuente cargada intencionalmente
+audio.addEventListener("error", () => {
   if (!audio.currentSrc || audio.currentSrc === window.location.href) return;
   flash(i18n[state.lang].toast_play_err, "red", 6000);
 });
@@ -759,14 +758,10 @@ function renderRadioCard(radio) {
   </article>`;
 }
 
-/* =========================================================
-   LÓGICA DE REPRODUCCIÓN MEJORADA
-   ========================================================= */
 function playRadioById(id) {
   const radio = state.radios.find((r) => r.stationuuid === id);
   if (!radio) return;
 
-  // Si la radio no es compatible, buscar si hay una versión MP3 en su grupo
   let playUrl = radio.url_resolved || radio.url;
   if (!radio._compatible && radio._group) {
     const compatible = radio._group.find((r) =>
@@ -781,7 +776,6 @@ function playRadioById(id) {
     return;
   }
 
-  // Validar mezcla de HTTP y HTTPS (bloqueo del navegador)
   if (window.location.protocol === "https:" && playUrl.startsWith("http:")) {
     flash(i18n[state.lang].toast_mixed, "red", 6000);
     return;
@@ -789,7 +783,7 @@ function playRadioById(id) {
 
   currentRadioId = id;
   audio.src = playUrl;
-  audio.load(); // Fuerza la carga del nuevo stream
+  audio.load();
 
   updatePlayerDisplay(radio.name || "Radio", playUrl);
 
@@ -924,17 +918,13 @@ function handleDragEnd(e) {
 }
 
 /* =========================================================
-   CONSTRUCCIÓN DEL ARCHIVO .SII (FORMATO EXACTO)
+   CONSTRUCCIÓN DEL ARCHIVO .SII (VUELTO AL ORIGINAL)
    ========================================================= */
 function buildSII() {
-  let out = "SiiNunit\n{\nlive_stream_def : _nameless.234.2c04.5a20\n{\n";
-  out += `    stream_data: ${state.list.length}\n`;
-
+  let out = "SiiNunit\n{\nlive_stream_def : .live_streams {\n";
   state.list.forEach((item, i) => {
-    // Formato: URL | Nombre | Género | Idioma | Bitrate | 1
-    out += `    stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|1"\n`;
+    out += ` stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|0|0|0|0"\n`;
   });
-
   out += "}\n}\n";
   return out;
 }

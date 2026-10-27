@@ -592,9 +592,7 @@ svg {
   background: rgba(25, 25, 30, 0.75);
   border: 1px solid var(--glass-border);
   border-radius: 100px;
-  /* Forma de píldora */
   padding: 8px 20px;
-  /* Más delgado */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -644,7 +642,6 @@ svg {
   margin-top: 0px;
 }
 
-/* SLIDER COMPACTO */
 input[type=range].vol-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -849,7 +846,6 @@ input[type=range].vol-slider::-moz-range-thumb {
   font-weight: 600;
 }
 
-/* Ajustes Responsive para la píldora */
 @media (max-width: 640px) {
   .player-bar {
     padding: 8px 12px;
@@ -859,6 +855,4 @@ input[type=range].vol-slider::-moz-range-thumb {
   .vol-slider {
     display: none;
   }
-
-  /* Ocultar slider en móvil para ahorrar espacio */
 }
