@@ -588,3 +588,153 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* (Mantén toda la lógica anterior. Al final, añade lo siguiente y actualiza el init) */
+
+/* =========================================================
+   SISTEMA DE LISTAS COMUNITARIAS
+   ========================================================= */
+const LS_COMMUNITY = 'ets_community_lists';
+const shareModal = $('#shareModal');
+const communityModal = $('#communityModal');
+
+// Abrir Modal de Compartir
+$('#btnShare').addEventListener('click', () => {
+  if (state.list.length === 0) { flash('> LA LISTA ESTÁ VACÍA', 'red'); return; }
+  shareModal.classList.add('active');
+  $('#shareName').focus();
+});
+
+$('#btnCancelShare').addEventListener('click', () => shareModal.classList.remove('active'));
+
+// Descargar JSON de la lista actual
+$('#btnDoShare').addEventListener('click', () => {
+  const name = $('#shareName').value.trim();
+  const author = $('#shareAuthor').value.trim();
+  
+  if (!name || !author) { alert('Por favor, completa ambos campos.'); return; }
+  
+  const exportData = {
+    meta: { name, author, date: new Date().toISOString() },
+    radios: state.list
+  };
+  
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; 
+  a.download = `Eurotrack_${name.replace(/\s+/g, '_')}_by_${author.replace(/\s+/g, '_')}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  
+  shareModal.classList.remove('active');
+  flash('> LISTA EXPORTADA', 'green');
+  $('#shareName').value = ''; $('#shareAuthor').value = '';
+});
+
+// Abrir Modal de Comunidad
+$('#btnOpenCommunity').addEventListener('click', () => {
+  communityModal.classList.add('active');
+  renderCommunityLists();
+});
+
+$('#btnCloseCommunity').addEventListener('click', () => communityModal.classList.remove('active'));
+
+// Subir archivo .json
+$('#btnUploadCommunity').addEventListener('click', () => $('#communityInput').click());
+
+$('#communityInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (!data.meta || !data.radios || !Array.isArray(data.radios)) throw new Error('Formato inválido');
+      
+      const savedLists = JSON.parse(localStorage.getItem(LS_COMMUNITY) || '[]');
+      
+      // Evitar duplicados exactos
+      if (!savedLists.some(l => l.meta.name === data.meta.name && l.meta.author === data.meta.author)) {
+        savedLists.push(data);
+        localStorage.setItem(LS_COMMUNITY, JSON.stringify(savedLists));
+        flash('> LISTA AÑADIDA A LA COMUNIDAD', 'green');
+      } else {
+        flash('> ESTA LISTA YA ESTÁ GUARDADA', 'neutral');
+      }
+      
+      renderCommunityLists();
+    } catch (err) {
+      flash('> ARCHIVO .JSON INVÁLIDO', 'red');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// Dibujar listas en el modal
+function renderCommunityLists() {
+  const container = $('#communityLists');
+  const savedLists = JSON.parse(localStorage.getItem(LS_COMMUNITY) || '[]');
+  
+  if (savedLists.length === 0) {
+    container.innerHTML = '<p class="text-center text-sm text-[var(--text-dim)]">No has importado ninguna lista aún.</p>';
+    return;
+  }
+  
+  container.innerHTML = savedLists.map((list, index) => `
+    <article class="community-card">
+      <section class="community-info">
+        <h3 class="community-name">${escapeHtml(list.meta.name)}</h3>
+        <p class="community-author">Creado por: <b>${escapeHtml(list.meta.author)}</b></p>
+        <p class="community-count">${list.radios.length} radios</p>
+      </section>
+      <section class="flex gap-2">
+        <button class="btn btn-lime" onclick="loadCommunityList(${index})">CARGAR</button>
+        <button class="btn btn-ghost" style="color:var(--danger);" onclick="deleteCommunityList(${index})">X</button>
+      </section>
+    </article>
+  `).join('');
+}
+
+// Fusionar lista de la comunidad con la lista actual
+window.loadCommunityList = function(index) {
+  const savedLists = JSON.parse(localStorage.getItem(LS_COMMUNITY) || '[]');
+  const list = savedLists[index];
+  if (!list) return;
+  
+  let addedCount = 0;
+  list.radios.forEach(radio => {
+    // Usar la misma lógica de addToList pero sin el toast para no saturar
+    const item = {
+      id: 'i' + Date.now() + Math.random().toString(36).slice(2, 7),
+      url: cleanField(radio.url), name: cleanField(radio.name),
+      genre: cleanField(radio.genre || 'GEN').toUpperCase(), language: cleanField(radio.language || 'GEN').toUpperCase(),
+      bitrate: String(parseInt(radio.bitrate, 10) || 128)
+    };
+    
+    // Si no está duplicado
+    if (!state.list.some(x => x.url === item.url && x.name === item.name)) {
+      state.list.push(item);
+      addedCount++;
+    }
+  });
+  
+  if (addedCount > 0) {
+    saveList();
+    renderList();
+    flash(`> SE AÑADIERON ${addedCount} RADIOS`, 'green');
+    communityModal.classList.remove('active');
+  } else {
+    flash('> ESAS RADIOS YA ESTÁN EN TU LISTA', 'neutral');
+  }
+};
+
+window.deleteCommunityList = function(index) {
+  if (!confirm('¿Borrar esta lista de tu biblioteca local?')) return;
+  const savedLists = JSON.parse(localStorage.getItem(LS_COMMUNITY) || '[]');
+  savedLists.splice(index, 1);
+  localStorage.setItem(LS_COMMUNITY, JSON.stringify(savedLists));
+  renderCommunityLists();
+};
