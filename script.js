@@ -28,7 +28,9 @@ const i18n = {
     footer_text: "EUROTRACK SIMULATOR",
     toast_dup: "> YA ESTÁ EN LA LISTA",
     toast_add: "> AÑADIDO AL SII",
-    toast_play_err: "> FALLO AL REPRODUCIR",
+    toast_play_err: "> FALLO AL REPRODUCIR (CÓDEC O CONEXIÓN)",
+    toast_mixed:
+      "> ERROR: MEZCLA DE HTTP Y HTTPS. EL NAVEGADOR BLOQUEÓ EL AUDIO.",
     toast_copied: "> TEXTO COPIADO",
     toast_exported: "> ARCHIVO EXPORTADO",
     toast_empty: "> LA LISTA YA ESTÁ VACÍA",
@@ -58,7 +60,8 @@ const i18n = {
     footer_text: "EUROTRACK SIMULATOR",
     toast_dup: "> ALREADY IN LIST",
     toast_add: "> ADDED TO SII",
-    toast_play_err: "> PLAYBACK FAILED",
+    toast_play_err: "> PLAYBACK FAILED (CODEC OR CONNECTION)",
+    toast_mixed: "> ERROR: MIXED HTTP AND HTTPS. BROWSER BLOCKED AUDIO.",
     toast_copied: "> TEXT COPIED",
     toast_exported: "> FILE EXPORTED",
     toast_empty: "> LIST IS ALREADY EMPTY",
@@ -423,14 +426,14 @@ function esCompatible(codec, url) {
   return false;
 }
 
-function flash(msg, color) {
+function flash(msg, color, duration = 4000) {
   const el = document.createElement("aside");
   el.className =
     "toast " +
     (color === "green" ? "green" : color === "red" ? "red" : "neutral");
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 2500);
+  setTimeout(() => el.remove(), duration);
 }
 
 function saveList() {
@@ -563,9 +566,10 @@ audio.addEventListener("ended", () => {
   updatePlayerDisplay(null, null);
   updatePlayButtons();
 });
-audio.addEventListener("error", () => {
-  if (!audio.currentSrc) return;
-  flash(i18n[state.lang].toast_play_err, "red");
+audio.addEventListener("error", (e) => {
+  // Ignorar errores si no hay una fuente cargada intencionalmente
+  if (!audio.currentSrc || audio.currentSrc === window.location.href) return;
+  flash(i18n[state.lang].toast_play_err, "red", 6000);
 });
 
 /* =========================================================
@@ -755,24 +759,48 @@ function renderRadioCard(radio) {
   </article>`;
 }
 
+/* =========================================================
+   LÓGICA DE REPRODUCCIÓN MEJORADA
+   ========================================================= */
 function playRadioById(id) {
   const radio = state.radios.find((r) => r.stationuuid === id);
   if (!radio) return;
-  const url = radio.url_resolved || radio.url;
+
+  // Si la radio no es compatible, buscar si hay una versión MP3 en su grupo
+  let playUrl = radio.url_resolved || radio.url;
+  if (!radio._compatible && radio._group) {
+    const compatible = radio._group.find((r) =>
+      esCompatible(r.codec, r.url_resolved || r.url),
+    );
+    if (compatible) playUrl = compatible.url_resolved || compatible.url;
+  }
+
   if (currentRadioId === id && !audio.paused) {
     audio.pause();
     updatePlayButtons();
     return;
   }
+
+  // Validar mezcla de HTTP y HTTPS (bloqueo del navegador)
+  if (window.location.protocol === "https:" && playUrl.startsWith("http:")) {
+    flash(i18n[state.lang].toast_mixed, "red", 6000);
+    return;
+  }
+
   currentRadioId = id;
-  audio.src = url;
-  updatePlayerDisplay(radio.name || "Radio", url);
-  audio.play().catch(() => {
-    flash(i18n[state.lang].toast_play_err, "red");
+  audio.src = playUrl;
+  audio.load(); // Fuerza la carga del nuevo stream
+
+  updatePlayerDisplay(radio.name || "Radio", playUrl);
+
+  audio.play().catch((err) => {
+    console.error("Error playing stream:", err);
+    flash(i18n[state.lang].toast_play_err, "red", 5000);
     currentRadioId = null;
     updatePlayerDisplay(null, null);
     updatePlayButtons();
   });
+
   updatePlayButtons();
 }
 
