@@ -7,7 +7,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Courier+Prime:wght@400;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="style.css">
@@ -21,25 +21,26 @@
         <svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke-width:2.5;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
       </span>
       <hgroup>
-        <h1 class="brand-title">EURO<span>TRACK</span></h1>
-        <p class="brand-sub">NAVIGATION SYSTEM · V 1.2</p>
+        <h1 class="brand-title">EURO<span class="text-[var(--accent)]">TRACK</span></h1>
+        <p class="brand-sub">NAVIGATION SYSTEM · V 1.0</p>
       </hgroup>
     </section>
     
     <section class="flex items-center gap-2 sm:gap-4">
-      <button id="btnOpenCommunity" class="sys-btn" title="Listas de la comunidad">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        <span class="hidden sm:inline">COMUNIDAD</span>
-      </button>
-
       <button id="btnLang" class="sys-btn">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
         <span>ES</span>
       </button>
       
       <button id="btnTheme" class="sys-btn" title="Cambiar tema">
-        <svg id="iconTheme" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg id="iconTheme" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
       </button>
+      
+      <span class="sys-badge hidden sm:block" data-i18n="header_radio">
+        SISTEMA DE RADIO
+      </span>
     </section>
   </nav>
 </header>
@@ -47,8 +48,10 @@
 <main class="max-w-7xl mx-auto px-5 py-8 flex-1 w-full">
   <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
+    <!-- CONTENIDO PRINCIPAL -->
     <section class="lg:col-span-8">
       <form class="mb-6 flex flex-col sm:flex-row gap-4" onsubmit="return false;">
+        
         <label class="search-wrapper">
           <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input id="radioSearch" type="text" data-i18n-placeholder="search_placeholder" placeholder="Buscar radio..." autocomplete="off" class="field search-input font-mono text-sm">
@@ -60,19 +63,20 @@
               <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
               <span data-i18n="all_countries">Todos</span>
             </span>
-            <span style="color:var(--accent);">_</span>
+            <span class="text-[var(--accent)]">_</span>
           </button>
-          <ul id="countryMenu" class="hidden absolute z-30 mt-1 w-full max-h-80 overflow-auto" style="background:var(--surface);border:2px solid var(--border);"></ul>
+          <ul id="countryMenu" class="hidden absolute z-30 mt-1 w-full max-h-80 overflow-auto" style="background:var(--surface);border:1px solid var(--border-2);"></ul>
         </section>
       </form>
       
       <section id="radioResults" class="space-y-4">
-        <p class="text-slate-500 font-mono text-sm py-8" data-i18n="connecting">> Iniciando conexión...</p>
+        <p class="text-[var(--muted)] font-mono text-sm py-8" data-i18n="connecting">> Iniciando conexión...</p>
       </section>
 
       <nav id="pagination" class="flex justify-center items-center gap-2 mt-8 mb-4 font-mono"></nav>
     </section>
 
+    <!-- PANEL LATERAL .sii -->
     <aside class="lg:col-span-4">
       <section class="panel">
         <header class="flex items-center justify-between mb-4 flex-shrink-0">
@@ -96,19 +100,13 @@ live_stream_def : .live_streams {
 
         <ul id="listItems" class="space-y-2 mb-4 pr-1"></ul>
 
-        <footer class="flex flex-col gap-2 flex-shrink-0 mt-auto">
-          <section class="flex gap-2">
-            <button id="btnImport" class="btn btn-ghost flex-1" title="Importar .sii">
-              <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            </button>
-            <button id="btnCopy" class="btn btn-ghost flex-1">COPIAR</button>
-            <button id="btnDownload" class="btn btn-lime flex-1">EXPORTAR</button>
-            <input type="file" id="fileInput" accept=".sii,.txt" class="hidden">
-          </section>
-          <button id="btnShare" class="btn btn-green w-full mt-1">
-            <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            COMPARTIR LISTA
+        <footer class="flex gap-2 flex-shrink-0 mt-auto">
+          <button id="btnImport" class="btn btn-ghost flex-1 px-2" title="Importar .sii">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           </button>
+          <button id="btnCopy" data-i18n="btn_copy" class="btn btn-ghost flex-1">COPIAR</button>
+          <button id="btnDownload" data-i18n="btn_export" class="btn btn-lime flex-1">EXPORTAR</button>
+          <input type="file" id="fileInput" accept=".sii,.txt" class="hidden">
         </footer>
       </section>
     </aside>
@@ -116,13 +114,14 @@ live_stream_def : .live_streams {
   </section>
 </main>
 
+<!-- FOOTER -->
 <footer class="app-footer">
   <nav class="max-w-7xl mx-auto px-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono">
     <section class="flex items-center gap-3">
-      <span class="w-6 h-6 flex items-center justify-center border border-[var(--border)] text-[var(--accent)] font-bold text-sm" style="font-family: 'Barlow Condensed'; background: var(--surface-2);">E</span>
-      <span class="text-[var(--text-dim)]">EUROTRACK SIMULATOR</span>
+      <span class="w-6 h-6 flex items-center justify-center border border-[var(--accent)] text-[var(--accent)] font-bold text-sm" style="font-family: 'Rajdhani'; border-radius: 2px;">E</span>
+      <span class="text-[var(--text-dim)]" data-i18n="footer_text">EUROTRACK SIMULATOR</span>
     </section>
-    <section class="flex items-center gap-4 text-[var(--text-dim)]">
+    <section class="flex items-center gap-4 text-[var(--muted)]">
       <a href="https://www.radio-browser.info/" target="_blank" class="hover:text-[var(--accent)] transition-colors">RADIO-BROWSER</a>
       <span>|</span>
       <span>ETS2 / ATS</span>
@@ -130,6 +129,7 @@ live_stream_def : .live_streams {
   </nav>
 </footer>
 
+<!-- PLAYER BAR (Sticky) -->
 <footer id="playerBar" class="player-bar">
   <section class="max-w-7xl mx-auto flex items-center gap-4">
     <span id="playerDot" class="dot-player"></span>
@@ -146,57 +146,12 @@ live_stream_def : .live_streams {
     <span id="volumeLabel" class="vol-label">60%</span>
     
     <button id="btnStop" class="icon-btn" title="Detener">
-      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14"></rect></svg>
+      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1"></rect></svg>
     </button>
   </section>
 </footer>
 
 <audio id="globalAudio" preload="none"></audio>
-
-<!-- MODAL: COMPARTIR LISTA -->
-<div id="shareModal" class="modal-overlay">
-  <section class="modal-box">
-    <h2 class="modal-title">Publicar Lista</h2>
-    <p class="text-sm text-[var(--text-dim)] mb-4">Se descargará un archivo .json que podrás compartir en Discord o WhatsApp para que otros lo carguen.</p>
-    
-    <form id="shareForm" onsubmit="return false;">
-      <label class="block mb-3">
-        <span class="text-xs font-bold font-mono">NOMBRE DE LA LISTA</span>
-        <input id="shareName" type="text" class="field mt-1" placeholder="Ej. Viaje a Alemania" required>
-      </label>
-      
-      <label class="block mb-4">
-        <span class="text-xs font-bold font-mono">TU NOMBRE / USUARIO</span>
-        <input id="shareAuthor" type="text" class="field mt-1" placeholder="Ej. Diego_Camionero" required>
-      </label>
-      
-      <div class="flex gap-2 justify-end mt-6">
-        <button type="button" id="btnCancelShare" class="btn btn-ghost">Cancelar</button>
-        <button type="button" id="btnDoShare" class="btn btn-green">Descargar .json</button>
-      </div>
-    </form>
-  </section>
-</div>
-
-<!-- MODAL: LISTAS DE LA COMUNIDAD -->
-<div id="communityModal" class="modal-overlay">
-  <section class="modal-box">
-    <header class="flex justify-between items-center mb-4">
-      <h2 class="modal-title">Listas Comunitarias</h2>
-      <button id="btnCloseCommunity" class="btn btn-ghost" style="padding: 4px 8px;">X</button>
-    </header>
-    
-    <div class="mb-6 p-4 border-2 border-[var(--border)] bg-[var(--surface-2)] text-center">
-      <p class="text-sm font-mono mb-2">Sube un archivo .json compartido por otro usuario</p>
-      <button id="btnUploadCommunity" class="btn btn-lime">Subir archivo .json</button>
-      <input type="file" id="communityInput" accept=".json" class="hidden">
-    </div>
-
-    <div id="communityLists" class="space-y-3">
-      <!-- Aquí se inyectan las listas guardadas -->
-    </div>
-  </section>
-</div>
 
 <script src="script.js"></script>
 </body>
