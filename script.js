@@ -64,20 +64,16 @@ function flash(msg, color) {
   el.textContent = msg; document.body.appendChild(el); setTimeout(() => el.remove(), 2500);
 }
 
-function saveList() {
-  localStorage.setItem(LS_KEYS.LIST, JSON.stringify(state.list));
-}
+function saveList() { localStorage.setItem(LS_KEYS.LIST, JSON.stringify(state.list)); }
 
 /* =========================================================
-   TRADUCCIÓN (i18n)
+   TRADUCCIÓN & TEMA
    ========================================================= */
 function setLanguage(lang) {
   state.lang = lang;
   localStorage.setItem(LS_KEYS.LANG, lang);
-  
   const btnLangSpan = document.querySelector('#btnLang span');
   if (btnLangSpan) btnLangSpan.textContent = lang === 'es' ? 'ES' : 'EN';
-  
   document.documentElement.lang = lang;
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -101,17 +97,12 @@ function setLanguage(lang) {
   renderRadios();
 }
 
-/* =========================================================
-   TEMA (Light / Dark)
-   ========================================================= */
 function setTheme(theme) {
   state.theme = theme;
   localStorage.setItem(LS_KEYS.THEME, theme);
   document.documentElement.setAttribute('data-theme', theme);
-  
   const iconSun = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
   const iconMoon = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
-  
   $('#iconTheme').innerHTML = theme === 'dark' ? iconSun : iconMoon;
 }
 
@@ -162,12 +153,12 @@ audio.addEventListener('ended', () => { currentRadioId = null; updatePlayerDispl
 audio.addEventListener('error', () => { if (!audio.currentSrc) return; flash(i18n[state.lang].toast_play_err, 'red'); });
 
 /* =========================================================
-   RADIOS (Paginación)
+   RADIOS
    ========================================================= */
 async function loadRadios(page = 1) {
   state.page = page;
   const resultsEl = $('#radioResults');
-  resultsEl.innerHTML = `<p class="text-[var(--muted)] font-mono text-sm py-8">${i18n[state.lang].searching}<span class="loader"></span></p>`;
+  resultsEl.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">${i18n[state.lang].searching}<span class="loader"></span></p>`;
   $('#pagination').innerHTML = '';
 
   if (radiosAbort) radiosAbort.abort();
@@ -181,13 +172,12 @@ async function loadRadios(page = 1) {
     const res = await fetch(`${API_RADIO}?${params.toString()}`, { signal: radiosAbort.signal });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
-    
     state.radios = processRadios(raw);
     renderRadios();
     renderPagination(raw.length === state.limit);
   } catch (err) {
     if (err.name === 'AbortError') return;
-    resultsEl.innerHTML = `<p class="text-[var(--rose)] font-mono text-sm py-8">${i18n[state.lang].error_conn} ${escapeHtml(err.message)}</p>`;
+    resultsEl.innerHTML = `<p class="text-[var(--danger)] font-mono text-sm py-8">${i18n[state.lang].error_conn} ${escapeHtml(err.message)}</p>`;
   }
 }
 
@@ -217,7 +207,7 @@ function processRadios(raw) {
 function renderRadios() {
   const host = $('#radioResults');
   if (!state.radios.length) {
-    host.innerHTML = `<p class="text-[var(--muted)] font-mono text-sm py-8">${i18n[state.lang].results_0}</p>`;
+    host.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">${i18n[state.lang].results_0}</p>`;
     return;
   }
   host.innerHTML = state.radios.map(renderRadioCard).join('');
@@ -233,17 +223,17 @@ function renderPagination(hasMore) {
   const endPage = hasMore ? state.page + 2 : state.page;
   
   html += state.page > 1 
-    ? `<button data-page="${state.page - 1}" class="w-8 h-8 flex items-center justify-center border border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)] rounded-sm"><</button>`
-    : `<span class="w-8 h-8 flex items-center justify-center border border-transparent text-[var(--muted)]"><</span>`;
+    ? `<button data-page="${state.page - 1}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]"><</button>`
+    : `<span class="w-8 h-8 flex items-center justify-center border-2 border-transparent text-[var(--text-dim)]"><</span>`;
 
   for (let i = startPage; i <= endPage; i++) {
-    if (i === state.page) html += `<span class="w-8 h-8 flex items-center justify-center border border-[var(--accent)] bg-[var(--accent)] text-[var(--bg)] font-bold rounded-sm shadow-[0_0_10px_rgba(0,210,255,0.4)]">${i}</span>`;
-    else html += `<button data-page="${i}" class="w-8 h-8 flex items-center justify-center border border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)] rounded-sm">${i}</button>`;
+    if (i === state.page) html += `<span class="w-8 h-8 flex items-center justify-center border-2 border-[var(--accent)] bg-[var(--accent)] text-white font-bold">${i}</span>`;
+    else html += `<button data-page="${i}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]">${i}</button>`;
   }
   
   html += hasMore 
-    ? `<button data-page="${state.page + 1}" class="w-8 h-8 flex items-center justify-center border border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)] rounded-sm">></button>`
-    : `<span class="w-8 h-8 flex items-center justify-center border border-transparent text-[var(--muted)]">></span>`;
+    ? `<button data-page="${state.page + 1}" class="w-8 h-8 flex items-center justify-center border-2 border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer bg-[var(--surface)]">></button>`
+    : `<span class="w-8 h-8 flex items-center justify-center border-2 border-transparent text-[var(--text-dim)]">></span>`;
     
   host.innerHTML = html;
 }
@@ -260,9 +250,9 @@ function renderRadioCard(radio) {
   const language = radio.language || iso3;
 
   const channelsHtml = group.length > 1
-    ? `<section class="channels-box"><span style="color:var(--muted);">>> CANALES:</span>${group.map(r => {
+    ? `<section class="channels-box"><span style="color:var(--text-dim);">>> CANALES:</span>${group.map(r => {
         const c = esCompatible(r.codec, r.url_resolved || r.url);
-        return `<span style="color:var(--${c ? 'lime' : 'rose'});margin-left:8px;">${c ? '✔' : '✘'} ${escapeHtml(r.codec || '?')} ${r.bitrate || 0}k</span>`;
+        return `<span style="color:var(--${c ? 'success' : 'danger'});margin-left:8px;">${c ? '✔' : '✘'} ${escapeHtml(r.codec || '?')} ${r.bitrate || 0}k</span>`;
       }).join(' ')}</section>` : '';
 
   let actionBtn = '';
@@ -321,16 +311,16 @@ function updatePlayButtons() {
     const on = card.dataset.radioId === currentRadioId && !audio.paused;
     if (on) {
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg> ${i18n[state.lang].btn_pause}`;
-      btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; btn.style.boxShadow = '0 0 10px rgba(0,210,255,0.2)';
+      btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)';
     } else {
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> ${i18n[state.lang].btn_play}`;
-      btn.style.borderColor = ''; btn.style.color = ''; btn.style.boxShadow = '';
+      btn.style.borderColor = ''; btn.style.color = '';
     }
   });
 }
 
 /* =========================================================
-   LISTA + .sii + IMPORTAR + DRAG & DROP
+   LISTA + .sii
    ========================================================= */
 function addToList(url, name, genre, language, bitrate) {
   if (!url || !name) return;
@@ -355,7 +345,7 @@ function renderList() {
   const host = $('#listItems');
   $('#listCount').textContent = String(state.list.length);
   if (!state.list.length) {
-    host.innerHTML = '<li class="text-xs text-center py-4 font-mono text-[var(--muted)] border border-dashed border-[var(--border-2)] rounded-sm">> VACÍO / EMPTY</li>';
+    host.innerHTML = '<li class="text-xs text-center py-4 font-mono text-[var(--text-dim)] border-2 border-dashed border-[var(--border)]">> VACÍO / EMPTY</li>';
   } else {
     host.innerHTML = state.list.map(item => `
       <li class="list-item" draggable="true" data-id="${item.id}">
@@ -367,7 +357,7 @@ function renderList() {
           <code class="list-item-url">${escapeHtml(item.url)}</code>
           <small class="list-item-meta">${escapeHtml(item.genre)} / ${escapeHtml(item.language)} / ${item.bitrate}</small>
         </section>
-        <button data-action="remove-item" data-item-id="${item.id}" class="text-[var(--rose)] hover:text-white transition-colors cursor-pointer" title="Quitar">
+        <button data-action="remove-item" data-item-id="${item.id}" style="color:var(--danger);" class="hover:text-white transition-colors cursor-pointer" title="Quitar">
           <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </li>`).join('');
@@ -424,6 +414,86 @@ function buildSII() {
   return out;
 }
 function updateSIIPreview() { $('#siiPreview').textContent = buildSII(); }
+
+/* =========================================================
+   SISTEMA DE COMPARTIR POR ENLACE (URL)
+   ========================================================= */
+const shareModal = $('#shareModal');
+
+$('#btnShare').addEventListener('click', () => {
+  if (state.list.length === 0) { flash('> LA LISTA ESTÁ VACÍA', 'red'); return; }
+  shareModal.classList.add('active');
+  $('#shareResult').classList.add('hidden');
+  $('#shareForm').classList.remove('hidden');
+  $('#shareAuthor').value = '';
+  $('#shareAuthor').focus();
+});
+
+$('#btnCancelShare').addEventListener('click', () => shareModal.classList.remove('active'));
+
+$('#btnDoShare').addEventListener('click', () => {
+  const author = $('#shareAuthor').value.trim() || 'Anónimo';
+  const dataToShare = { author: author, radios: state.list };
+  
+  const jsonString = JSON.stringify(dataToShare);
+  const encodedData = btoa(encodeURIComponent(jsonString));
+  
+  const baseUrl = window.location.origin + window.location.pathname;
+  const fullUrl = `${baseUrl}?lista=${encodedData}`;
+  
+  $('#shareUrl').value = fullUrl;
+  $('#shareForm').classList.add('hidden');
+  $('#shareResult').classList.remove('hidden');
+});
+
+$('#btnCopyUrl').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('#shareUrl').value);
+    flash('> ENLACE COPIADO', 'green');
+    shareModal.classList.remove('active');
+  } catch (err) {
+    alert('No se pudo copiar. Selecciona el texto y copia manualmente.');
+  }
+});
+
+function loadSharedPlaylist() {
+  const params = new URLSearchParams(window.location.search);
+  const listData = params.get('lista');
+  
+  if (listData) {
+    try {
+      const decodedURI = atob(listData);
+      const jsonString = decodeURIComponent(decodedURI);
+      const data = JSON.parse(jsonString);
+      
+      if (data && data.radios && data.radios.length > 0) {
+        setTimeout(() => {
+          if (confirm(`¡Alguien compartió una lista contigo!\n\nCreada por: ${data.author}\nContiene: ${data.radios.length} radios.\n\n¿Quieres añadir estas radios a tu lista actual?`)) {
+            let addedCount = 0;
+            data.radios.forEach(r => {
+              if (!state.list.some(x => x.url === r.url && x.name === r.name)) {
+                state.list.push(r);
+                addedCount++;
+              }
+            });
+            
+            if (addedCount > 0) {
+              saveList();
+              renderList();
+              flash(`> SE AÑADIERON ${addedCount} RADIOS`, 'green');
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          } else {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }, 1000);
+      }
+    } catch (e) {
+      console.error('Error al decodificar el enlace:', e);
+      flash('> EL ENLACE ESTÁ DAÑADO', 'red');
+    }
+  }
+}
 
 /* =========================================================
    IMPORTAR .sii
@@ -487,9 +557,10 @@ function renderCountryMenu() {
       ? `<img src="https://flagcdn.com/w40/${c.code.toLowerCase()}.png" alt="" class="w-5 h-3 object-cover rounded-sm" loading="lazy">`
       : `<svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
     const active = state.country === c.code ? 'active' : '';
-    return `<li><button class="country-item ${active} flex items-center gap-3 w-full px-4 py-2 hover:bg-[var(--surface-2)] text-left font-mono text-xs" data-country-code="${c.code}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
+    return `<li><button class="country-item ${active} flex items-center gap-3 w-full text-left font-mono text-xs" data-country-code="${c.code}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
   }).join('');
 }
+
 function updateCountryButton() {
   const el = $('#countryBtnContent');
   if (!state.country) {
@@ -585,7 +656,9 @@ function init() {
   renderCountryMenu();
   renderList();
   loadRadios(1);
+  
+  // Si hay una lista en la URL, cargarla
+  loadSharedPlaylist();
 }
 
 document.addEventListener('DOMContentLoaded', init);
-
