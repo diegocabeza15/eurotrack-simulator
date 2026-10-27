@@ -888,11 +888,18 @@ function handleDragEnd(e) {
     .forEach((el) => el.classList.remove("drag-over"));
 }
 
+/* =========================================================
+   CONSTRUCCIÓN DEL ARCHIVO .SII (FORMATO EXACTO)
+   ========================================================= */
 function buildSII() {
-  let out = "SiiNunit\n{\nlive_stream_def : .live_streams {\n";
+  let out = "SiiNunit\n{\nlive_stream_def : _nameless.234.2c04.5a20\n{\n";
+  out += `    stream_data: ${state.list.length}\n`;
+
   state.list.forEach((item, i) => {
-    out += ` stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|0|0|0|0"\n`;
+    // Formato: URL | Nombre | Género | Idioma | Bitrate | 1
+    out += `    stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|1"\n`;
   });
+
   out += "}\n}\n";
   return out;
 }
