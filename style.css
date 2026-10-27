@@ -1,52 +1,56 @@
 /* ============================================================
-   TEMA · MODERN CABIN / GLASSMORPHISM
+   TEMA · NEON CYBER / GLASSMORPHISM
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
-  /* Paleta Oscura (Night Drive) */
-  --bg-base: #090a0f;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #1a2333 0%, #090a0f 70%);
+  /* Paleta Oscura (Deep Space) */
+  --bg-base: #09090B;
+  /* Negro puro con un toque muy sutil de gris */
+  --bg-gradient: radial-gradient(circle at 50% -20%, #2D1B4E 0%, #09090B 70%);
+  /* Resplandor púrpura arriba */
 
-  --glass-bg: rgba(20, 26, 38, 0.65);
-  --glass-bg-2: rgba(30, 41, 59, 0.8);
+  --glass-bg: rgba(25, 25, 30, 0.65);
+  --glass-bg-2: rgba(35, 35, 40, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
+  --glass-border-hover: rgba(255, 255, 255, 0.18);
 
-  --text-main: #F1F5F9;
-  --text-muted: #94A3B8;
-  --text-dark: #64748B;
+  --text-main: #FAFAFA;
+  --text-muted: #A1A1AA;
+  --text-dark: #52525B;
 
-  /* Acentos (Luces de tablero) */
-  --accent: #FF7A00;
-  /* Naranja de acción */
-  --accent-glow: rgba(255, 122, 0, 0.3);
-  --cyan: #06B6D4;
-  /* Cian de datos */
+  /* Acentos (Neón) */
+  --accent: #D946EF;
+  /* Fucsia brillante */
+  --accent-glow: rgba(217, 70, 239, 0.3);
+  --secondary: #A3E635;
+  /* Lima eléctrico */
   --success: #10B981;
   --danger: #F43F5E;
 
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.8);
 }
 
 [data-theme="light"] {
-  /* Paleta Clara (Day Drive) */
-  --bg-base: #F8FAFC;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #E2E8F0 0%, #F8FAFC 70%);
+  /* Paleta Clara (Soft Pastel) */
+  --bg-base: #FAFAFA;
+  --bg-gradient: radial-gradient(circle at 50% -20%, #F3E8FF 0%, #FAFAFA 70%);
 
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.65);
   --glass-bg-2: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-border-hover: rgba(0, 0, 0, 0.12);
 
-  --text-main: #0F172A;
-  --text-muted: #475569;
-  --text-dark: #94A3B8;
+  --text-main: #18181B;
+  --text-muted: #71717A;
+  --text-dark: #A1A1AA;
 
-  --accent: #EA580C;
-  --accent-glow: rgba(234, 88, 12, 0.2);
-  --cyan: #0891B2;
+  --accent: #C026D3;
+  /* Fucsia más oscuro para contraste */
+  --accent-glow: rgba(192, 38, 211, 0.2);
+  --secondary: #65A30D;
+  /* Lima oscuro */
   --success: #059669;
   --danger: #E11D48;
 
@@ -99,7 +103,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--accent);
 }
 
 h1,
@@ -147,7 +151,7 @@ svg {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), #FF9F43);
+  background: linear-gradient(135deg, #D946EF, #8B5CF6);
   color: #FFF;
   box-shadow: 0 4px 12px var(--accent-glow);
 }
@@ -275,8 +279,8 @@ svg {
 }
 
 .btn-lime {
-  /* Botón principal (naranja) */
-  background: linear-gradient(135deg, var(--accent), #FF9F43);
+  /* Botón principal (Fucsia) */
+  background: linear-gradient(135deg, #D946EF, #8B5CF6);
   color: #FFF;
   box-shadow: 0 4px 15px var(--accent-glow);
 }
@@ -287,14 +291,14 @@ svg {
 }
 
 .btn-green {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(163, 230, 53, 0.1);
+  color: var(--secondary);
+  border-color: rgba(163, 230, 53, 0.3);
 }
 
 .btn-green:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: var(--success);
+  background: rgba(163, 230, 53, 0.2);
+  border-color: var(--secondary);
 }
 
 .btn-ghost {
@@ -317,8 +321,8 @@ svg {
 }
 
 .btn-play:hover {
-  border-color: var(--cyan);
-  color: var(--cyan);
+  border-color: var(--secondary);
+  color: var(--secondary);
 }
 
 /* TARJETAS DE RADIO (Glass) */
@@ -493,7 +497,7 @@ svg {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--cyan);
+  color: var(--secondary);
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-all;
@@ -571,7 +575,7 @@ svg {
   display: block;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: var(--cyan);
+  color: var(--secondary);
   margin-top: 4px;
 }
 
@@ -592,7 +596,7 @@ svg {
   background: var(--glass-bg-2);
   border-top: 1px solid var(--glass-border);
   padding: 16px 24px;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
