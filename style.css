@@ -196,12 +196,6 @@ input[type=range].vol-slider::-moz-range-thumb { width: 16px; height: 24px; back
 .loader::after { content: '...'; display: inline-block; margin-left: 4px; animation: blink 1s step-end infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-/* MODALES */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
-.modal-overlay.active { display: flex; }
-.modal-box { background: var(--surface); border: 3px solid var(--border); width: 100%; max-width: 500px; padding: 24px; box-shadow: 8px 8px 0 rgba(0,0,0,0.5); }
-.modal-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 28px; text-transform: uppercase; color: var(--text); margin-bottom: 8px; }
-
 /* OVERRIDES TAILWIND */
 .text-slate-400 { color: var(--text-dim) !important; }
 .text-slate-500 { color: var(--text-dim) !important; }

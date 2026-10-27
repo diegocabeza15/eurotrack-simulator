@@ -416,86 +416,6 @@ function buildSII() {
 function updateSIIPreview() { $('#siiPreview').textContent = buildSII(); }
 
 /* =========================================================
-   SISTEMA DE COMPARTIR POR ENLACE (URL)
-   ========================================================= */
-const shareModal = $('#shareModal');
-
-$('#btnShare').addEventListener('click', () => {
-  if (state.list.length === 0) { flash('> LA LISTA ESTÁ VACÍA', 'red'); return; }
-  shareModal.classList.add('active');
-  $('#shareResult').classList.add('hidden');
-  $('#shareForm').classList.remove('hidden');
-  $('#shareAuthor').value = '';
-  $('#shareAuthor').focus();
-});
-
-$('#btnCancelShare').addEventListener('click', () => shareModal.classList.remove('active'));
-
-$('#btnDoShare').addEventListener('click', () => {
-  const author = $('#shareAuthor').value.trim() || 'Anónimo';
-  const dataToShare = { author: author, radios: state.list };
-  
-  const jsonString = JSON.stringify(dataToShare);
-  const encodedData = btoa(encodeURIComponent(jsonString));
-  
-  const baseUrl = window.location.origin + window.location.pathname;
-  const fullUrl = `${baseUrl}?lista=${encodedData}`;
-  
-  $('#shareUrl').value = fullUrl;
-  $('#shareForm').classList.add('hidden');
-  $('#shareResult').classList.remove('hidden');
-});
-
-$('#btnCopyUrl').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText($('#shareUrl').value);
-    flash('> ENLACE COPIADO', 'green');
-    shareModal.classList.remove('active');
-  } catch (err) {
-    alert('No se pudo copiar. Selecciona el texto y copia manualmente.');
-  }
-});
-
-function loadSharedPlaylist() {
-  const params = new URLSearchParams(window.location.search);
-  const listData = params.get('lista');
-  
-  if (listData) {
-    try {
-      const decodedURI = atob(listData);
-      const jsonString = decodeURIComponent(decodedURI);
-      const data = JSON.parse(jsonString);
-      
-      if (data && data.radios && data.radios.length > 0) {
-        setTimeout(() => {
-          if (confirm(`¡Alguien compartió una lista contigo!\n\nCreada por: ${data.author}\nContiene: ${data.radios.length} radios.\n\n¿Quieres añadir estas radios a tu lista actual?`)) {
-            let addedCount = 0;
-            data.radios.forEach(r => {
-              if (!state.list.some(x => x.url === r.url && x.name === r.name)) {
-                state.list.push(r);
-                addedCount++;
-              }
-            });
-            
-            if (addedCount > 0) {
-              saveList();
-              renderList();
-              flash(`> SE AÑADIERON ${addedCount} RADIOS`, 'green');
-              window.history.replaceState({}, document.title, window.location.pathname);
-            }
-          } else {
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        }, 1000);
-      }
-    } catch (e) {
-      console.error('Error al decodificar el enlace:', e);
-      flash('> EL ENLACE ESTÁ DAÑADO', 'red');
-    }
-  }
-}
-
-/* =========================================================
    IMPORTAR .sii
    ========================================================= */
 document.getElementById('btnImport').addEventListener('click', () => {
@@ -656,9 +576,6 @@ function init() {
   renderCountryMenu();
   renderList();
   loadRadios(1);
-  
-  // Si hay una lista en la URL, cargarla
-  loadSharedPlaylist();
 }
 
 document.addEventListener('DOMContentLoaded', init);
