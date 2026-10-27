@@ -456,14 +456,6 @@ function setLanguage(lang) {
     if (i18n[lang][key]) el.setAttribute("placeholder", i18n[lang][key]);
   });
 
-  // Actualizar el botón de filtro
-  const compatMap = {
-    all: i18n[lang].filter_all,
-    ok: i18n[lang].filter_ok,
-    err: i18n[lang].filter_err,
-  };
-  $("#compatBtnContent").textContent = compatMap[state.compatFilter];
-
   const searchTitle = $("#radioResults").querySelector("p");
   if (
     searchTitle &&
@@ -896,18 +888,11 @@ function handleDragEnd(e) {
     .forEach((el) => el.classList.remove("drag-over"));
 }
 
-/* =========================================================
-   CONSTRUCCIÓN DEL ARCHIVO .SII (FORMATO EXACTO)
-   ========================================================= */
 function buildSII() {
-  let out = "SiiNunit\n{\nlive_stream_def : _nameless.234.2c04.5a20\n{\n";
-  out += `    stream_data: ${state.list.length}\n`;
-
+  let out = "SiiNunit\n{\nlive_stream_def : .live_streams {\n";
   state.list.forEach((item, i) => {
-    // Formato: URL | Nombre | Género | Idioma | Bitrate | 1
-    out += `    stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|1"\n`;
+    out += ` stream_data[${i}]: "${item.url}|${item.name}|${item.genre}|${item.language}|${item.bitrate}|0|0|0|0"\n`;
   });
-
   out += "}\n}\n";
   return out;
 }
@@ -958,8 +943,6 @@ function updateCountryButton() {
 document.addEventListener("click", (ev) => {
   if (!ev.target.closest("#countryWrap"))
     $("#countryMenu").classList.add("hidden");
-  if (!ev.target.closest("#compatWrap"))
-    $("#compatMenu").classList.add("hidden");
 
   const pageBtn = ev.target.closest("[data-page]");
   if (pageBtn) {
@@ -974,22 +957,6 @@ document.addEventListener("click", (ev) => {
     updateCountryButton();
     $("#countryMenu").classList.add("hidden");
     loadRadios(1);
-    return;
-  }
-
-  const compatItem = ev.target.closest("[data-compat]");
-  if (compatItem) {
-    state.compatFilter = compatItem.dataset.compat;
-
-    // Actualizar botón y clases
-    $("#compatBtnContent").textContent = compatItem.textContent;
-    document
-      .querySelectorAll("#compatMenu [data-compat]")
-      .forEach((el) => el.classList.remove("active"));
-    compatItem.classList.add("active");
-
-    $("#compatMenu").classList.add("hidden");
-    renderRadios();
     return;
   }
 
@@ -1036,17 +1003,14 @@ document.getElementById("radioSearch").addEventListener(
     loadRadios(1);
   }, 600),
 );
-
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#countryMenu").classList.toggle("hidden");
-  $("#compatMenu").classList.add("hidden"); // Cierra el otro menú
 });
 
-document.getElementById("compatBtn").addEventListener("click", (e) => {
-  e.stopPropagation();
-  $("#compatMenu").classList.toggle("hidden");
-  $("#countryMenu").classList.add("hidden"); // Cierra el otro menú
+document.getElementById("compatFilter").addEventListener("change", (e) => {
+  state.compatFilter = e.target.value;
+  renderRadios();
 });
 
 document.addEventListener("keydown", (e) => {

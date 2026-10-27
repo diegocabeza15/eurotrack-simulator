@@ -230,6 +230,11 @@ svg {
   background: var(--glass-bg-2);
 }
 
+select.field option {
+  background: var(--bg-base);
+  color: var(--text-main);
+}
+
 .search-wrapper {
   position: relative;
   flex: 1;
@@ -795,8 +800,8 @@ input[type=range].vol-slider::-moz-range-thumb {
   background: rgba(0, 0, 0, 0.4) !important;
 }
 
-/* MENÚS DESPLEGABLES (Glass) */
-.glass-menu {
+/* Country Menu Items */
+#countryMenu {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -804,7 +809,6 @@ input[type=range].vol-slider::-moz-range-thumb {
   border-radius: 12px;
   background: var(--glass-bg-2) !important;
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -815,7 +819,6 @@ input[type=range].vol-slider::-moz-range-thumb {
   font-size: 14px !important;
   color: var(--text-main);
   transition: background 0.1s;
-  cursor: pointer;
 }
 
 .country-item:last-child {
