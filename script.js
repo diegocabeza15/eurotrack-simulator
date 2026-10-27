@@ -456,7 +456,6 @@ function setLanguage(lang) {
     if (i18n[lang][key]) el.setAttribute("placeholder", i18n[lang][key]);
   });
 
-  // Actualizar el botón de filtro
   const compatMap = {
     all: i18n[lang].filter_all,
     ok: i18n[lang].filter_ok,
@@ -981,7 +980,6 @@ document.addEventListener("click", (ev) => {
   if (compatItem) {
     state.compatFilter = compatItem.dataset.compat;
 
-    // Actualizar botón y clases
     $("#compatBtnContent").textContent = compatItem.textContent;
     document
       .querySelectorAll("#compatMenu [data-compat]")
@@ -1040,13 +1038,13 @@ document.getElementById("radioSearch").addEventListener(
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#countryMenu").classList.toggle("hidden");
-  $("#compatMenu").classList.add("hidden"); // Cierra el otro menú
+  $("#compatMenu").classList.add("hidden");
 });
 
 document.getElementById("compatBtn").addEventListener("click", (e) => {
   e.stopPropagation();
   $("#compatMenu").classList.toggle("hidden");
-  $("#countryMenu").classList.add("hidden"); // Cierra el otro menú
+  $("#countryMenu").classList.add("hidden");
 });
 
 document.addEventListener("keydown", (e) => {
