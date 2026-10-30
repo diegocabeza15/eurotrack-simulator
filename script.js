@@ -22,6 +22,7 @@ const i18n = {
     badge_ok: "✔ MP3/OGG",
     badge_err: "✘ NO COMPATIBLE",
     btn_add: "＋ AÑADIR",
+    btn_added: "✔ AÑADIDO",
     btn_use_mp3: "USAR MP3",
     btn_no_support: "NO SOPORTADO",
     btn_play: "PLAY",
@@ -52,6 +53,7 @@ const i18n = {
     badge_ok: "✔ MP3/OGG",
     badge_err: "✘ NOT COMPATIBLE",
     btn_add: "＋ ADD",
+    btn_added: "✔ ADDED",
     btn_use_mp3: "USE MP3",
     btn_no_support: "NOT SUPPORTED",
     btn_play: "PLAY",
@@ -370,6 +372,7 @@ const state = {
   radios: [],
   country: "",
   radioQuery: "",
+  searchType: "name", // 'name', 'tag', 'language'
   list: [],
   page: 1,
   limit: 24,
@@ -380,6 +383,7 @@ const state = {
 
 let currentRadioId = null;
 let radiosAbort = null;
+let playTimeout = null;
 const $ = (sel) => document.querySelector(sel);
 
 function escapeHtml(s) {
@@ -460,15 +464,6 @@ function setLanguage(lang) {
     if (i18n[lang][key]) el.setAttribute("placeholder", i18n[lang][key]);
   });
 
-  const searchTitle = $("#radioResults").querySelector("p");
-  if (
-    searchTitle &&
-    (searchTitle.textContent.includes("Iniciando") ||
-      searchTitle.textContent.includes("Connecting"))
-  ) {
-    searchTitle.textContent = i18n[lang].connecting;
-  }
-
   renderCountryMenu();
   renderList();
   updateCountryButton();
@@ -537,15 +532,16 @@ function updatePlayerDisplay(title, url) {
   else playerDot.classList.remove("active");
 }
 
-volumeSlider.addEventListener("input", (e) => {
-  applyVolume(parseInt(e.target.value, 10) / 100);
-});
+volumeSlider.addEventListener("input", (e) =>
+  applyVolume(parseInt(e.target.value, 10) / 100),
+);
 btnMute.addEventListener("click", () => {
   audio.muted = !audio.muted;
   localStorage.setItem(LS_KEYS.MUTED, String(audio.muted));
   updateVolumeUI();
 });
 btnStop.addEventListener("click", () => {
+  clearTimeout(playTimeout);
   audio.pause();
   audio.removeAttribute("src");
   audio.load();
@@ -554,6 +550,7 @@ btnStop.addEventListener("click", () => {
   updatePlayButtons();
 });
 audio.addEventListener("play", updatePlayButtons);
+audio.addEventListener("playing", () => clearTimeout(playTimeout)); // Si empieza a sonar, cancelar timeout de error
 audio.addEventListener("pause", updatePlayButtons);
 audio.addEventListener("ended", () => {
   currentRadioId = null;
@@ -571,7 +568,14 @@ audio.addEventListener("error", () => {
 async function loadRadios(page = 1) {
   state.page = page;
   const resultsEl = $("#radioResults");
-  resultsEl.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">${i18n[state.lang].searching}<span class="loader"></span></p>`;
+
+  // SKELETON LOADER
+  resultsEl.innerHTML = `
+    <div class="skeleton-grid">
+      <div class="skeleton-card"></div><div class="skeleton-card"></div>
+      <div class="skeleton-card"></div><div class="skeleton-card"></div>
+      <div class="skeleton-card"></div><div class="skeleton-card"></div>
+    </div>`;
   $("#pagination").innerHTML = "";
 
   if (radiosAbort) radiosAbort.abort();
@@ -584,24 +588,24 @@ async function loadRadios(page = 1) {
     reverse: "true",
     hidebroken: "true",
   });
+
   if (state.country) params.set("countrycode", state.country);
-  if (state.radioQuery) params.set("name", state.radioQuery);
+  if (state.radioQuery) params.set(state.searchType, state.radioQuery); // Usa el tipo de búsqueda seleccionado
 
   try {
     let res = null;
-    // Lógica de Fallback integrada
     for (const server of API_SERVERS) {
       try {
         res = await fetch(
           `${server}/json/stations/search?${params.toString()}`,
           {
             signal: radiosAbort.signal,
-            headers: { "User-Agent": "EuroTrackApp/1.2" },
+            headers: { "User-Agent": "EuroTrackApp/1.3" },
           },
         );
-        if (res.ok) break; // Si el servidor responde bien, salimos del bucle
+        if (res.ok) break;
       } catch (err) {
-        if (err.name === "AbortError") throw err; // Detener si el usuario cambió la búsqueda
+        if (err.name === "AbortError") throw err;
         console.warn(`Servidor ${server} falló, probando el siguiente...`);
       }
     }
@@ -660,11 +664,10 @@ function renderRadios() {
   }
 
   let filteredRadios = state.radios;
-  if (state.compatFilter === "ok") {
+  if (state.compatFilter === "ok")
     filteredRadios = filteredRadios.filter((r) => r._compatible);
-  } else if (state.compatFilter === "err") {
+  else if (state.compatFilter === "err")
     filteredRadios = filteredRadios.filter((r) => !r._compatible);
-  }
 
   if (filteredRadios.length === 0) {
     host.innerHTML = `<p class="text-slate-500 font-mono text-sm py-8">> NO HAY RADIOS CON ESTE FILTRO</p>`;
@@ -734,11 +737,7 @@ function renderRadioCard(radio) {
   if (compat) {
     actionBtn = `<button data-action="add-radio" data-radio-id="${radio.stationuuid}" class="btn btn-lime px-4 py-2 text-xs">${i18n[state.lang].btn_add}</button>`;
   } else if (groupCompat) {
-    actionBtn = `<button data-action="add-alt" data-radio-id="${radio.stationuuid}"
-      data-alt-url="${escapeHtml(groupCompat.url_resolved || groupCompat.url)}"
-      data-alt-name="${escapeHtml(radio.name)}" data-alt-genre="${escapeHtml(genre)}"
-      data-alt-language="${escapeHtml(language)}" data-alt-bitrate="${groupCompat.bitrate || 128}"
-      class="btn btn-green px-4 py-2 text-xs">${i18n[state.lang].btn_use_mp3}</button>`;
+    actionBtn = `<button data-action="add-alt" data-radio-id="${radio.stationuuid}" data-alt-url="${escapeHtml(groupCompat.url_resolved || groupCompat.url)}" data-alt-name="${escapeHtml(radio.name)}" data-alt-genre="${escapeHtml(genre)}" data-alt-language="${escapeHtml(language)}" data-alt-bitrate="${groupCompat.bitrate || 128}" class="btn btn-green px-4 py-2 text-xs">${i18n[state.lang].btn_use_mp3}</button>`;
   } else {
     actionBtn = `<button class="btn btn-ghost px-4 py-2 text-xs opacity-50 cursor-not-allowed" disabled>${i18n[state.lang].btn_no_support}</button>`;
   }
@@ -777,10 +776,25 @@ function playRadioById(id) {
     updatePlayButtons();
     return;
   }
+
   currentRadioId = id;
   audio.src = url;
   updatePlayerDisplay(radio.name || "Radio", url);
+
+  // Timeout de seguridad por si el stream falla silenciosamente
+  clearTimeout(playTimeout);
+  playTimeout = setTimeout(() => {
+    if (audio.currentTime === 0 && !audio.paused) {
+      flash(i18n[state.lang].toast_play_err, "red");
+      audio.pause();
+      currentRadioId = null;
+      updatePlayerDisplay(null, null);
+      updatePlayButtons();
+    }
+  }, 7000); // 7 segundos de margen
+
   audio.play().catch(() => {
+    clearTimeout(playTimeout);
     flash(i18n[state.lang].toast_play_err, "red");
     currentRadioId = null;
     updatePlayerDisplay(null, null);
@@ -836,7 +850,6 @@ function removeFromList(id) {
 }
 
 let dragSrcEl = null;
-
 function renderList() {
   const host = $("#listItems");
   $("#listCount").textContent = String(state.list.length);
@@ -893,10 +906,8 @@ function handleDrop(e) {
     const destId = this.dataset.id;
     const srcIdx = state.list.findIndex((x) => x.id === srcId);
     const destIdx = state.list.findIndex((x) => x.id === destId);
-
     const [moved] = state.list.splice(srcIdx, 1);
     state.list.splice(destIdx, 0, moved);
-
     saveList();
     renderList();
   }
@@ -939,7 +950,7 @@ function renderCountryMenu() {
         ? `<img src="https://flagcdn.com/w40/${c.code.toLowerCase()}.png" alt="" class="w-5 h-3 object-cover rounded-md" loading="lazy">`
         : `<svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
       const active = state.country === c.code ? "active" : "";
-      return `<li><button class="country-item ${active} flex items-center gap-3 w-full text-left" data-country-code="${c.code}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
+      return `<li><button class="country-item ${active} flex items-center gap-3 w-full text-left" data-country-code="${c.code}" tabindex="0" role="option" aria-selected="${active ? "true" : "false"}">${flag}<span>${escapeHtml(c.name)}</span></button></li>`;
     })
     .join("");
 }
@@ -947,10 +958,7 @@ function renderCountryMenu() {
 function updateCountryButton() {
   const el = $("#countryBtnContent");
   if (!state.country) {
-    el.innerHTML = `
-      <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-      <span>${i18n[state.lang].all_countries}</span>
-    `;
+    el.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg><span>${i18n[state.lang].all_countries}</span>`;
   } else {
     const c = COUNTRIES.find((x) => x.code === state.country);
     el.innerHTML = `<img src="https://flagcdn.com/w40/${state.country.toLowerCase()}.png" alt="" class="w-4 h-3 object-cover rounded-md"><span>${escapeHtml(c ? c.name : state.country)}</span>`;
@@ -961,8 +969,10 @@ function updateCountryButton() {
    EVENTOS GLOBALES
    ========================================================= */
 document.addEventListener("click", (ev) => {
-  if (!ev.target.closest("#countryWrap"))
+  if (!ev.target.closest("#countryWrap")) {
     $("#countryMenu").classList.add("hidden");
+    $("#countryBtn").setAttribute("aria-expanded", "false");
+  }
 
   const pageBtn = ev.target.closest("[data-page]");
   if (pageBtn) {
@@ -976,12 +986,26 @@ document.addEventListener("click", (ev) => {
     state.country = countryItem.dataset.countryCode;
     updateCountryButton();
     $("#countryMenu").classList.add("hidden");
+    $("#countryBtn").setAttribute("aria-expanded", "false");
     loadRadios(1);
     return;
   }
 
   const btn = ev.target.closest("[data-action]");
   if (!btn) return;
+
+  // FEEDBACK VISUAL AL AÑADIR
+  if (btn.dataset.action === "add-radio" || btn.dataset.action === "add-alt") {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = i18n[state.lang].btn_added;
+    btn.classList.add("btn-added");
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.classList.remove("btn-added");
+      btn.disabled = false;
+    }, 2000);
+  }
 
   switch (btn.dataset.action) {
     case "play-radio":
@@ -1016,6 +1040,17 @@ document.addEventListener("click", (ev) => {
   }
 });
 
+// Manejo de teclado para el menú de países (Accesibilidad)
+document.getElementById("countryMenu").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    const activeItem = document.activeElement;
+    if (activeItem && activeItem.classList.contains("country-item")) {
+      activeItem.click();
+    }
+  }
+});
+
 document.getElementById("radioSearch").addEventListener(
   "input",
   debounce((e) => {
@@ -1023,14 +1058,37 @@ document.getElementById("radioSearch").addEventListener(
     loadRadios(1);
   }, 600),
 );
+
+document.getElementById("searchType").addEventListener("change", (e) => {
+  state.searchType = e.target.value;
+  if (state.radioQuery) loadRadios(1);
+});
+
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
-  $("#countryMenu").classList.toggle("hidden");
+  const menu = $("#countryMenu");
+  const isHidden = menu.classList.toggle("hidden");
+  $("#countryBtn").setAttribute("aria-expanded", String(!isHidden));
 });
 
 document.getElementById("compatFilter").addEventListener("change", (e) => {
   state.compatFilter = e.target.value;
   renderRadios();
+});
+
+// BOTÓN DE RADIO ALEATORIA
+document.getElementById("btnRandom").addEventListener("click", () => {
+  let pool = state.radios;
+  if (state.compatFilter === "ok") pool = pool.filter((r) => r._compatible);
+  else if (state.compatFilter === "err")
+    pool = pool.filter((r) => !r._compatible);
+
+  if (pool.length === 0) {
+    flash("> NO HAY RADIOS PARA REPRODUCIR", "red");
+    return;
+  }
+  const randomRadio = pool[Math.floor(Math.random() * pool.length)];
+  playRadioById(randomRadio.stationuuid);
 });
 
 document.addEventListener("keydown", (e) => {
@@ -1077,12 +1135,16 @@ document.getElementById("btnClear").addEventListener("click", () => {
   renderList();
   flash(i18n[state.lang].toast_cleared, "neutral");
 });
-document.getElementById("btnTheme").addEventListener("click", () => {
-  setTheme(state.theme === "dark" ? "light" : "dark");
-});
-document.getElementById("btnLang").addEventListener("click", () => {
-  setLanguage(state.lang === "es" ? "en" : "es");
-});
+document
+  .getElementById("btnTheme")
+  .addEventListener("click", () =>
+    setTheme(state.theme === "dark" ? "light" : "dark"),
+  );
+document
+  .getElementById("btnLang")
+  .addEventListener("click", () =>
+    setLanguage(state.lang === "es" ? "en" : "es"),
+  );
 
 /* =========================================================
    INIT
