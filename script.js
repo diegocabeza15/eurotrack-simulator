@@ -6,6 +6,8 @@ const API_SERVERS = [
   "https://de2.api.radio-browser.info",
   "https://nl1.api.radio-browser.info",
 ];
+const API_SERVER_DIRECTORY =
+  "https://all.api.radio-browser.info/json/servers";
 
 const i18n = {
   es: {
@@ -609,6 +611,26 @@ async function loadRadios(page = 1) {
       }
     }
 
+    if (!res || !res.ok) {
+      const additionalServers = await discoverApiServers(radiosAbort.signal);
+      for (const server of additionalServers) {
+        try {
+          res = await fetch(
+            `${server}/json/stations/search?${params.toString()}`,
+            {
+              signal: radiosAbort.signal,
+              headers: { "User-Agent": "EuroTrackApp/1.3" },
+            },
+          );
+          if (res.ok) break;
+          console.warn(`Servidor ${server} respondió con ${res.status}`);
+        } catch (err) {
+          if (err.name === "AbortError") throw err;
+          console.warn(`Servidor ${server} falló, probando el siguiente...`);
+        }
+      }
+    }
+
     if (!res || !res.ok) throw new Error("Todos los servidores fallaron");
 
     const raw = await res.json();
@@ -618,6 +640,37 @@ async function loadRadios(page = 1) {
   } catch (err) {
     if (err.name === "AbortError") return;
     resultsEl.innerHTML = `<p class="text-[var(--danger)] font-mono text-sm py-8">${i18n[state.lang].error_conn} ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+async function discoverApiServers(signal) {
+  try {
+    const res = await fetch(API_SERVER_DIRECTORY, { signal });
+    if (!res.ok) {
+      throw new Error(`El directorio respondió con ${res.status}`);
+    }
+
+    const entries = await res.json();
+    if (!Array.isArray(entries)) {
+      throw new Error("El directorio devolvió una lista inválida");
+    }
+
+    return [
+      ...new Set(
+        entries
+          .map((entry) => entry && entry.name)
+          .filter(
+            (name) =>
+              typeof name === "string" &&
+              /^[a-z0-9.-]+\.api\.radio-browser\.info$/i.test(name),
+          )
+          .map((name) => `https://${name}`),
+      ),
+    ].filter((server) => !API_SERVERS.includes(server));
+  } catch (err) {
+    if (err.name === "AbortError") throw err;
+    console.warn("No se pudo consultar el directorio de Radio-Browser:", err);
+    return [];
   }
 }
 
