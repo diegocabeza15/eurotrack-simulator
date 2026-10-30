@@ -1,7 +1,11 @@
 /* =========================================================
    CONFIG & DICCIONARIOS
    ========================================================= */
-const API_RADIO = "https://all.api.radio-browser.info/json/stations/search";
+const API_SERVERS = [
+  "https://de1.api.radio-browser.info",
+  "https://de2.api.radio-browser.info",
+  "https://nl1.api.radio-browser.info",
+];
 
 const i18n = {
   es: {
@@ -584,10 +588,26 @@ async function loadRadios(page = 1) {
   if (state.radioQuery) params.set("name", state.radioQuery);
 
   try {
-    const res = await fetch(`${API_RADIO}?${params.toString()}`, {
-      signal: radiosAbort.signal,
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    let res = null;
+    // Lógica de Fallback integrada
+    for (const server of API_SERVERS) {
+      try {
+        res = await fetch(
+          `${server}/json/stations/search?${params.toString()}`,
+          {
+            signal: radiosAbort.signal,
+            headers: { "User-Agent": "EuroTrackApp/1.2" },
+          },
+        );
+        if (res.ok) break; // Si el servidor responde bien, salimos del bucle
+      } catch (err) {
+        if (err.name === "AbortError") throw err; // Detener si el usuario cambió la búsqueda
+        console.warn(`Servidor ${server} falló, probando el siguiente...`);
+      }
+    }
+
+    if (!res || !res.ok) throw new Error("Todos los servidores fallaron");
+
     const raw = await res.json();
     state.radios = processRadios(raw);
     renderRadios();
