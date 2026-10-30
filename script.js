@@ -372,7 +372,6 @@ const state = {
   radios: [],
   country: "",
   radioQuery: "",
-  searchType: "name", // 'name', 'tag', 'language'
   list: [],
   page: 1,
   limit: 24,
@@ -590,7 +589,7 @@ async function loadRadios(page = 1) {
   });
 
   if (state.country) params.set("countrycode", state.country);
-  if (state.radioQuery) params.set(state.searchType, state.radioQuery); // Usa el tipo de búsqueda seleccionado
+  if (state.radioQuery) params.set("name", state.radioQuery);
 
   try {
     let res = null;
@@ -1058,11 +1057,6 @@ document.getElementById("radioSearch").addEventListener(
     loadRadios(1);
   }, 600),
 );
-
-document.getElementById("searchType").addEventListener("change", (e) => {
-  state.searchType = e.target.value;
-  if (state.radioQuery) loadRadios(1);
-});
 
 document.getElementById("countryBtn").addEventListener("click", (e) => {
   e.stopPropagation();
